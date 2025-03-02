@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Issue {
   id: string;
@@ -75,6 +76,7 @@ export default function IssuesPage() {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const supabase = createClient();
+  const router = useRouter();
 
   const fetchIssues = async () => {
     setLoading(true);
@@ -191,8 +193,7 @@ export default function IssuesPage() {
   };
 
   const handleViewDetails = (issue: Issue) => {
-    setSelectedIssue(issue);
-    setIsDetailsDialogOpen(true);
+    router.push(`/dashboard/issues/${issue.id}`);
   };
 
   if (loading) {
@@ -321,86 +322,6 @@ export default function IssuesPage() {
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* View Details Dialog */}
-      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{selectedIssue?.title}</DialogTitle>
-            <DialogDescription>
-              Issue details and related programs
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedIssue && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <h3 className="font-medium text-sm">Category</h3>
-                  <p>{selectedIssue.category || "Uncategorized"}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Status</h3>
-                  <Badge className={getStatusColor(selectedIssue.status)}>
-                    {selectedIssue.status}
-                  </Badge>
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Priority</h3>
-                  <Badge className={getPriorityColor(selectedIssue.priority)}>
-                    {selectedIssue.priority}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Description</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedIssue.description || "No description provided"}
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm mb-2">Related Programs</h3>
-                {selectedIssue.programs && selectedIssue.programs.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedIssue.programs.map((program) => (
-                      <div key={program.id} className="border rounded p-2 flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">{program.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {program.status} • {program.startDate && `Starts: ${new Date(program.startDate).toLocaleDateString()}`}
-                          </p>
-                        </div>
-                        <Link href={`/dashboard/programs?id=${program.id}`}>
-                          <Button variant="outline" size="sm">View</Button>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No programs associated with this issue</p>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                <div>
-                  <p>Created: {new Date(selectedIssue.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p>Last Updated: {new Date(selectedIssue.updatedAt).toLocaleDateString()}</p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {issues.length === 0 ? (

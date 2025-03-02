@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2, Mail, Phone, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Attendance {
   sessionId: string;
@@ -70,6 +71,7 @@ export default function ParentsPage() {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const supabase = createClient();
+  const router = useRouter();
 
   const fetchParents = async () => {
     setLoading(true);
@@ -194,8 +196,7 @@ export default function ParentsPage() {
   };
 
   const handleViewDetails = (parent: Parent) => {
-    setSelectedParent(parent);
-    setIsDetailsDialogOpen(true);
+    router.push(`/dashboard/parents/${parent.id}`);
   };
 
   if (loading) {
@@ -317,131 +318,6 @@ export default function ParentsPage() {
         </Dialog>
       </div>
 
-      {/* View Details Dialog */}
-      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{selectedParent?.name}</DialogTitle>
-            <DialogDescription>
-              Parent details and attendance history
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedParent && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium text-sm">Email</h3>
-                  <p>
-                    {selectedParent.email ? (
-                      <a href={`mailto:${selectedParent.email}`} className="text-blue-600 hover:underline">
-                        {selectedParent.email}
-                      </a>
-                    ) : (
-                      "No email provided"
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Phone</h3>
-                  <p>
-                    {selectedParent.phone ? (
-                      <a href={`tel:${selectedParent.phone}`} className="text-blue-600 hover:underline">
-                        {selectedParent.phone}
-                      </a>
-                    ) : (
-                      "No phone provided"
-                    )}
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Address</h3>
-                <p>{selectedParent.address || "No address provided"}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Children Information</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedParent.childrenInfo || "No children information provided"}
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Notes</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedParent.notes || "No notes provided"}
-                </p>
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-sm">Attendance History</h3>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${getAttendanceColor(getAttendanceRate(selectedParent))}`}>
-                      {getAttendanceRate(selectedParent)}% attendance rate
-                    </span>
-                    <Badge className={getAttendanceColor(getAttendanceRate(selectedParent)).replace('text-', 'bg-')}>
-                      {selectedParent.attendanceCount?.attended || 0}/{selectedParent.attendanceCount?.total || 0}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {selectedParent.attendance && selectedParent.attendance.length > 0 ? (
-                  <div className="border rounded-md overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Session
-                          </th>
-                          <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date
-                          </th>
-                          <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {selectedParent.attendance.map((record, index) => (
-                          <tr key={index}>
-                            <td className="px-4 py-2 whitespace-nowrap">
-                              <Link href={`/dashboard/sessions?id=${record.sessionId}`} className="hover:underline text-blue-600">
-                                {record.sessionTitle}
-                              </Link>
-                            </td>
-                            <td className="px-4 py-2 whitespace-nowrap">
-                              {formatDate(record.date)}
-                            </td>
-                            <td className="px-4 py-2 whitespace-nowrap">
-                              {record.attended ? (
-                                <Badge className="bg-green-500">Attended</Badge>
-                              ) : (
-                                <Badge variant="outline">Absent</Badge>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No attendance records</p>
-                )}
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {parents.length === 0 ? (
           <div className="col-span-full text-center py-12">
@@ -475,11 +351,10 @@ export default function ParentsPage() {
                 )}
               </CardContent>
               <CardFooter className="flex justify-between pt-2">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {parent.attendanceCount?.total || 0} sessions
-                  </span>
+                <div className="text-sm text-muted-foreground">
+                  {typeof parent.attendanceCount === 'object' 
+                    ? `${parent.attendanceCount.attended || 0}/${parent.attendanceCount.total || 0} sessions` 
+                    : `${parent.attendanceCount || 0} sessions`}
                 </div>
                 <Button variant="outline" size="sm" onClick={() => handleViewDetails(parent)}>
                   View Details

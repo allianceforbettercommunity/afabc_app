@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Calendar, MapPin, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Program {
   id: string;
@@ -81,6 +82,7 @@ export default function SessionsPage() {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const supabase = createClient();
+  const router = useRouter();
 
   const fetchPrograms = async () => {
     try {
@@ -236,8 +238,7 @@ export default function SessionsPage() {
   };
 
   const handleViewDetails = (session: Session) => {
-    setSelectedSession(session);
-    setIsDetailsDialogOpen(true);
+    router.push(`/dashboard/sessions/${session.id}`);
   };
 
   if (loading) {
@@ -370,111 +371,6 @@ export default function SessionsPage() {
         </Dialog>
       </div>
 
-      {/* View Details Dialog */}
-      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{selectedSession?.title}</DialogTitle>
-            <DialogDescription>
-              Session details and attendance information
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedSession && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium text-sm">Date</h3>
-                  <p>{formatDate(selectedSession.date)}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm">Time</h3>
-                  <p>{formatTime(selectedSession.date)}</p>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Location</h3>
-                <p>{selectedSession.location || "No location specified"}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Program</h3>
-                <p>
-                  {selectedSession.programName ? (
-                    <Link href={`/dashboard/programs?id=${selectedSession.programId}`} className="hover:underline text-blue-600">
-                      {selectedSession.programName}
-                    </Link>
-                  ) : (
-                    "No program associated"
-                  )}
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Description</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedSession.description || "No description provided"}
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm">Notes</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedSession.notes || "No notes provided"}
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-sm mb-2">Attendance ({selectedSession.attendanceCount || 0} parents)</h3>
-                {selectedSession.parents && selectedSession.parents.length > 0 ? (
-                  <div className="border rounded-md overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Parent
-                          </th>
-                          <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {selectedSession.parents.map((parent) => (
-                          <tr key={parent.id}>
-                            <td className="px-4 py-2 whitespace-nowrap">
-                              <Link href={`/dashboard/parents?id=${parent.id}`} className="hover:underline text-blue-600">
-                                {parent.name}
-                              </Link>
-                            </td>
-                            <td className="px-4 py-2 whitespace-nowrap">
-                              {parent.attended ? (
-                                <Badge className="bg-green-500">Attended</Badge>
-                              ) : (
-                                <Badge variant="outline">Absent</Badge>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No attendance records</p>
-                )}
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sessions.length === 0 ? (
           <div className="col-span-full text-center py-12">
@@ -513,11 +409,8 @@ export default function SessionsPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between pt-2">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {session.attendanceCount || 0} attendees
-                  </span>
+                <div className="text-sm text-muted-foreground">
+                  {session.attendanceCount || 0} attendees
                 </div>
                 <Button variant="outline" size="sm" onClick={() => handleViewDetails(session)}>
                   View Details
