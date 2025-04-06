@@ -259,7 +259,7 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Link href={`/dashboard/programs?edit=${program.id}`}>
+                <Link href={`/dashboard/programs/${program.id}/edit`}>
                   <Button className="w-full">Edit Program</Button>
                 </Link>
                 <Link href={`/dashboard/sessions?programId=${program.id}`}>

@@ -236,6 +236,8 @@ export default function ProgramsPage() {
   };
 
   const handleViewDetails = (program: Program) => {
+    setSelectedProgram(program);
+    setIsDetailsDialogOpen(true);
     router.push(`/dashboard/programs/${program.id}`);
   };
 
@@ -378,6 +380,82 @@ export default function ProgramsPage() {
         </Dialog>
       </div>
 
+      {/* View Details Dialog */}
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{selectedProgram?.title}</DialogTitle>
+            <DialogDescription>
+              Program details and related sessions
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedProgram && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-sm">Status</h3>
+                  <Badge className={getStatusColor(selectedProgram.status)}>
+                    {selectedProgram.status}
+                  </Badge>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">Related Issue</h3>
+                  <p>{selectedProgram.issueName || "None"}</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-sm">Description</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedProgram.description || "No description provided"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-sm">Start Date</h3>
+                  <p>{formatDate(selectedProgram.startDate)}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-sm">End Date</h3>
+                  <p>{formatDate(selectedProgram.endDate)}</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-sm mb-2">Sessions</h3>
+                {selectedProgram.sessions && selectedProgram.sessions.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedProgram.sessions.map((session) => (
+                      <div key={session.id} className="border rounded p-2 flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{session.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(session.date)} {session.location && `• ${session.location}`}
+                          </p>
+                        </div>
+                        <Link href={`/dashboard/sessions?id=${session.id}`}>
+                          <Button variant="outline" size="sm">View</Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No sessions scheduled</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {programs.length === 0 ? (
           <div className="col-span-full text-center py-12">
@@ -428,4 +506,4 @@ export default function ProgramsPage() {
       </div>
     </div>
   );
-} 
+}
