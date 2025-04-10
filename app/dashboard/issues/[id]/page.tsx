@@ -97,20 +97,50 @@ export default async function IssueDetailPage({ params }: { params: { id: string
     );
   }
 
-  // Fetch related programs
+  // Fetch related programs with explicit count limit to ensure we get all programs
   const { data: programsData, error: programsError } = await supabase
     .from("programs")
     .select("*")
     .eq("issueId", params.id)
-    .order("startDate", { ascending: false });
+    .order("startDate", { ascending: false })
+    .limit(100); // Explicitly set a high limit
 
   if (programsError) {
     console.error("Error fetching related programs:", programsError);
   }
 
+  // Log the results for debugging
+  console.log(`Fetched ${programsData?.length || 0} programs for issue ${params.id}`);
+  
+  // Also try fetching by issue name for backward compatibility
+  let additionalPrograms: any[] = [];
+  if (issueData.title) {
+    const { data: programsByName, error: programsByNameError } = await supabase
+      .from("programs")
+      .select("*")
+      .ilike("issueName", issueData.title) // Use case-insensitive match
+      .or(`issueId.neq.${params.id}`) // Avoid duplicates with more reliable syntax
+      .order("startDate", { ascending: false })
+      .limit(100); // Explicitly set a high limit
+    
+    if (programsByNameError) {
+      console.error("Error fetching programs by issue name:", programsByNameError);
+    } else if (programsByName && programsByName.length > 0) {
+      console.log(`Found ${programsByName.length} additional programs by issue name "${issueData.title}"`);
+      additionalPrograms = programsByName;
+    }
+  }
+
+  // Just to verify the merged data in server logs
+  const allPrograms = [...(programsData || []), ...additionalPrograms];
+  console.log(`Total programs to display: ${allPrograms.length}`);
+  allPrograms.forEach((program, index) => {
+    console.log(`  Program ${index+1}: ${program.title} (ID: ${program.id})`);
+  });
+
   const issue: Issue = {
     ...issueData,
-    programs: programsData || []
+    programs: allPrograms
   };
 
   const formatDate = (dateString: string) => {

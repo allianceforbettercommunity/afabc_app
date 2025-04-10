@@ -38,6 +38,8 @@ export default function LoginPage() {
     defaultValues: {
       email: "",
       password: "",
+
+
     },
   });
 
@@ -96,6 +98,8 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
+
+                
             </form>
           </Form>
           <div className="text-center text-sm">

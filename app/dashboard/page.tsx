@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardHeader } from "@/components/dashboard-header";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   BarChart, 
   Bar, 
@@ -17,6 +17,8 @@ import {
   Legend
 } from "recharts";
 import { createClient } from "@/lib/supabase/client";
+import { BarChart3, Users, Calendar, Layers, ChevronRight, Clock } from "lucide-react";
+import Link from "next/link";
 
 interface Issue {
   id: string;
@@ -62,7 +64,6 @@ export default function DashboardPage() {
   const [issueData, setIssueData] = useState<any[]>([]);
   const [sessionsByMonth, setSessionsByMonth] = useState<any[]>([]);
   const [upcomingSessions, setUpcomingSessions] = useState<Session[]>([]);
-  const [attendanceRate, setAttendanceRate] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const supabase = createClient();
@@ -145,13 +146,6 @@ export default function DashboardPage() {
         }).slice(0, 5) || [];
         
         setUpcomingSessions(upcoming);
-        
-        // Calculate attendance rate
-        if (attendance && attendance.length > 0) {
-          const attendedCount = attendance.filter(a => a.attended).length;
-          const rate = Math.round((attendedCount / attendance.length) * 100);
-          setAttendanceRate(rate);
-        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -162,14 +156,16 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  const CHART_COLORS = ['#FF9F29', '#2D5BFF', '#4CAF50', '#E91E63', '#9C27B0'];
 
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <DashboardHeader title="Dashboard" />
         <div className="flex items-center justify-center flex-1">
-          <p>Loading dashboard data...</p>
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            <p className="mt-4 text-muted-foreground font-medium">Loading dashboard data...</p>
+          </div>
         </div>
       </div>
     );
@@ -177,170 +173,255 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <DashboardHeader title="Dashboard" />
+      <div className="mb-8">
+        <div className="flex flex-col space-y-1.5">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
+          <p className="text-muted-foreground">Monitor your program activities and track engagement metrics.</p>
+        </div>
+      </div>
       
-      <div className="p-4 md:p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Issues</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{issueCount}</div>
-              <p className="text-xs text-muted-foreground">
-                Active policy campaigns and issues
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Programs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{programCount}</div>
-              <p className="text-xs text-muted-foreground">
-                Programs addressing issues
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Sessions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{sessionCount}</div>
-              <p className="text-xs text-muted-foreground">
-                Total sessions scheduled
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Parents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{parentCount}</div>
-              <p className="text-xs text-muted-foreground">
-                Registered parents
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Issues by Category</CardTitle>
-            </CardHeader>
-            <CardContent className="h-80">
-              {issueData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={issueData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {issueData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <p>No issue data available</p>
+      <div className="space-y-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <BarChart3 className="h-4 w-4 text-primary" />
                 </div>
-              )}
+                <span>Issues</span>
+              </CardTitle>
+              <CardDescription>Active policy campaigns</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{issueCount}</div>
+              <div className="mt-4">
+                <Link 
+                  href="/dashboard/issues" 
+                  className="text-sm text-primary flex items-center hover:underline"
+                >
+                  View all issues
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
             </CardContent>
           </Card>
-
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Sessions by Month</CardTitle>
+          
+          <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <div className="p-2 rounded-full bg-accent/20">
+                  <Layers className="h-4 w-4 text-accent" />
+                </div>
+                <span>Programs</span>
+              </CardTitle>
+              <CardDescription>Active initiatives</CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={sessionsByMonth}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="hsl(var(--chart-1))" />
-                </BarChart>
-              </ResponsiveContainer>
+            <CardContent>
+              <div className="text-3xl font-bold">{programCount}</div>
+              <div className="mt-4">
+                <Link 
+                  href="/dashboard/programs" 
+                  className="text-sm text-primary flex items-center hover:underline"
+                >
+                  View all programs
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Calendar className="h-4 w-4 text-primary" />
+                </div>
+                <span>Sessions</span>
+              </CardTitle>
+              <CardDescription>Total scheduled</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{sessionCount}</div>
+              <div className="mt-4">
+                <Link 
+                  href="/dashboard/sessions" 
+                  className="text-sm text-primary flex items-center hover:underline"
+                >
+                  View all sessions
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <div className="p-2 rounded-full bg-accent/20">
+                  <Users className="h-4 w-4 text-accent" />
+                </div>
+                <span>Parents</span>
+              </CardTitle>
+              <CardDescription>Registered participants</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{parentCount}</div>
+              <div className="mt-4">
+                <Link 
+                  href="/dashboard/parents" 
+                  className="text-sm text-primary flex items-center hover:underline"
+                >
+                  View all parents
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Sessions</CardTitle>
+        <div className="grid gap-8 md:grid-cols-2">
+          <Card className="premium-shadow border-border/60">
+            <CardHeader className="bg-secondary/30 pb-4">
+              <CardTitle className="text-lg font-medium">Issues by Category</CardTitle>
+              <CardDescription>Distribution of issues across different categories</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {upcomingSessions.length > 0 ? (
-                  upcomingSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between border-b pb-4">
-                      <div>
-                        <p className="font-medium">{session.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Program: {session.programName} • {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                      <div className="text-sm">
-                        <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                          {session.location || "No location"}
-                        </span>
-                      </div>
-                    </div>
-                  ))
+            <CardContent className="pt-6">
+              <div className="h-80">
+                {issueData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={issueData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {issueData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
                 ) : (
-                  <p>No upcoming sessions</p>
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">No issue categories found</p>
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Attendance Overview</CardTitle>
+          
+          <Card className="premium-shadow border-border/60">
+            <CardHeader className="bg-secondary/30 pb-4">
+              <CardTitle className="text-lg font-medium">Sessions by Month</CardTitle>
+              <CardDescription>Number of sessions scheduled per month</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className="text-5xl font-bold mb-2">{attendanceRate}%</div>
-                <p className="text-muted-foreground">Overall attendance rate</p>
-                
-                <div className="w-full mt-6 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div 
-                    className="bg-blue-600 h-2.5 rounded-full" 
-                    style={{ width: `${attendanceRate}%` }}
-                  ></div>
-                </div>
-                
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {attendanceRate >= 80 ? (
-                      "Excellent attendance rate! Keep up the good work."
-                    ) : attendanceRate >= 60 ? (
-                      "Good attendance rate. Consider strategies to improve engagement."
-                    ) : (
-                      "Attendance needs improvement. Review your engagement strategies."
-                    )}
-                  </p>
-                </div>
+            <CardContent className="pt-6">
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={sessionsByMonth}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip 
+                      contentStyle={{ background: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}
+                    />
+                    <Bar 
+                      dataKey="count" 
+                      name="Sessions" 
+                      fill="#FF9F29" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        <Card className="premium-shadow border-border/60">
+          <CardHeader className="bg-secondary/30 pb-4">
+            <CardTitle className="text-lg font-medium">Upcoming Sessions</CardTitle>
+            <CardDescription>Your next 5 scheduled sessions</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {upcomingSessions.length > 0 ? (
+              <div className="divide-y divide-border/40">
+                {upcomingSessions.map((session) => {
+                  const sessionDate = new Date(session.date);
+                  const today = new Date();
+                  const tomorrow = new Date(today);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  
+                  const isToday = sessionDate.toDateString() === today.toDateString();
+                  const isTomorrow = sessionDate.toDateString() === tomorrow.toDateString();
+                  
+                  let badgeText = "";
+                  let badgeVariant: "default" | "outline" = "outline";
+                  
+                  if (isToday) {
+                    badgeText = "Today";
+                    badgeVariant = "default";
+                  } else if (isTomorrow) {
+                    badgeText = "Tomorrow";
+                    badgeVariant = "outline";
+                  }
+                  
+                  return (
+                    <div key={session.id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col space-y-1">
+                          <Link 
+                            href={`/dashboard/sessions/${session.id}`}
+                            className="font-medium hover:text-primary hover:underline transition-colors"
+                          >
+                            {session.title}
+                          </Link>
+                          <div className="text-sm text-muted-foreground">{session.programName || "No program"}</div>
+                        </div>
+                        
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Clock className="h-3.5 w-3.5 mr-1 inline-block" />
+                            {sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {badgeText && (
+                              <Badge variant={badgeVariant} className="rounded-full px-2.5 py-0.5 text-xs">
+                                {badgeText}
+                              </Badge>
+                            )}
+                            <span className="text-sm">
+                              {sessionDate.toLocaleDateString(undefined, { 
+                                month: 'short', 
+                                day: 'numeric',
+                                year: sessionDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="rounded-full bg-secondary p-4 mb-4">
+                  <Calendar className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium mb-1">No upcoming sessions</h3>
+                <p className="text-muted-foreground">Schedule your next session to see it here</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

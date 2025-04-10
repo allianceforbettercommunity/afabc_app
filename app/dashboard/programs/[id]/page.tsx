@@ -13,6 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
+// This allows for dynamic data fetching even though generateStaticParams is present
+export const dynamic = 'force-dynamic';
+// This disables static generation for this route
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const supabase = createClient();
   const { data: programs } = await supabase.from('programs').select('id');
@@ -139,16 +144,75 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
       ) AS "attendanceCount"
     `)
     .eq("programId", params.id)
-    .order("date", { ascending: true });
+    .order("date", { ascending: true })
+    .limit(100); // Explicitly set a high limit
 
   if (sessionsError) {
     console.error("Error fetching related sessions:", sessionsError);
   }
 
+  // Log the results for debugging
+  console.log(`Fetched ${sessionsData?.length || 0} sessions for program ${params.id}`);
+  
+  // Also try fetching by program name for backward compatibility
+  let additionalSessions: any[] = [];
+  
+  // If we didn't find any sessions with programId, try to find sessions with matching programName
+  if ((sessionsData?.length || 0) === 0 && programData?.title) {
+    try {
+      // Try using RPC function first
+      const { data: relatedSessions, error: rpcError } = await supabase
+        .rpc('find_related_sessions', { 
+          program_id: params.id, 
+          program_title: programData.title 
+        });
+        
+      if (!rpcError && relatedSessions && relatedSessions.length > 0) {
+        console.log(`Found ${relatedSessions.length} related sessions using RPC`);
+        additionalSessions = relatedSessions;
+      } else {
+        // Fallback to direct query if RPC fails or returns empty
+        const { data: sessionsByName, error: sessionsByNameError } = await supabase
+          .from("sessions")
+          .select(`
+            id, 
+            title, 
+            date, 
+            location, 
+            description, 
+            notes,
+            programName,
+            (
+              SELECT COUNT(*) 
+              FROM attendance 
+              WHERE attendance."sessionId" = sessions.id
+            ) AS "attendanceCount"
+          `)
+          .is("programId", null) // Only get sessions without a programId set
+          .or(`title.ilike.%${programData.title}%,description.ilike.%${programData.title}%`)
+          .order("date", { ascending: true })
+          .limit(100);
+        
+        if (sessionsByNameError) {
+          console.error("Error fetching sessions without programId:", sessionsByNameError);
+        } else if (sessionsByName && sessionsByName.length > 0) {
+          console.log(`Found ${sessionsByName.length} sessions by search terms`);
+          additionalSessions = sessionsByName;
+        }
+      }
+    } catch (error) {
+      console.error("Error finding related sessions:", error);
+    }
+  }
+
+  // Just to verify the merged data in server logs
+  const allSessions = [...(sessionsData || []), ...additionalSessions];
+  console.log(`Total sessions to display: ${allSessions.length}`);
+
   const program: Program = {
     ...programData,
     issue: issueData || undefined,
-    sessions: sessionsData || []
+    sessions: allSessions
   };
 
   const formatDate = (dateString: string) => {
