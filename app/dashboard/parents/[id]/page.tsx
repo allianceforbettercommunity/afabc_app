@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -56,7 +55,6 @@ interface Parent {
   createdAt: string;
   updatedAt: string;
   attendance?: Attendance[];
-  attendanceRate?: number;
 }
 
 export default async function ParentDetailPage({ params }: { params: { id: string } }) {
@@ -128,26 +126,14 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
     console.error("Error fetching attendance:", attendanceError);
   }
 
-  // Calculate attendance rate
-  const attendanceRate = attendanceData 
-    ? (attendanceData.filter(a => a.attended).length / attendanceData.length) * 100 
-    : 0;
-
   const parent: Parent = {
     ...parentData,
-    attendance: attendanceData || [],
-    attendanceRate: attendanceData && attendanceData.length > 0 ? attendanceRate : 0
+    attendance: attendanceData || []
   };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
-  };
-
-  const getAttendanceColor = (rate: number) => {
-    if (rate >= 80) return "bg-green-500";
-    if (rate >= 50) return "bg-yellow-500";
-    return "bg-red-500";
   };
 
   return (
@@ -230,7 +216,7 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
         </div>
 
         <div>
-          <Card>
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle>Actions</CardTitle>
             </CardHeader>
@@ -248,90 +234,71 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
             </CardContent>
           </Card>
           
-          {parent.attendance && parent.attendance.length > 0 && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Attendance Overview</CardTitle>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {parent.attendance.filter(a => a.attended).length} of {parent.attendance.length} sessions attended
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span>Attendance Rate</span>
-                      <span>{Math.round(parent.attendanceRate || 0)}%</span>
-                    </div>
-                    <Progress value={parent.attendanceRate || 0} className="h-2" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Session Attendance</CardTitle>
+              <CardDescription>
+                {parent.attendance?.length || 0} sessions
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
 
-        {parent.attendance && parent.attendance.length > 0 && (
-          <div className="md:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Attendance History</CardTitle>
-                <CardDescription>
-                  Sessions this parent has attended
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+        <div className="md:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>Attendance History</CardTitle>
+              <CardDescription>
+                Sessions the parent has attended or been invited to
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {parent.attendance && parent.attendance.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Date</TableHead>
                       <TableHead>Session</TableHead>
                       <TableHead>Program</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Attended</TableHead>
                       <TableHead>Notes</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {parent.attendance.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-medium">
-                          {record.session.title}
-                        </TableCell>
+                    {parent.attendance.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{formatDate(item.session.date)}</TableCell>
                         <TableCell>
-                          {record.session.programName}
+                          <Link 
+                            href={`/dashboard/sessions/${item.sessionId}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {item.session.title}
+                          </Link>
                         </TableCell>
+                        <TableCell>{item.session.programName}</TableCell>
                         <TableCell>
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                            {formatDate(record.session.date)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {record.attended ? (
-                            <Badge className="bg-green-500">Attended</Badge>
+                          {item.attended ? (
+                            <Badge className="bg-green-500">Yes</Badge>
                           ) : (
-                            <Badge variant="outline">Absent</Badge>
+                            <Badge variant="outline">No</Badge>
                           )}
                         </TableCell>
                         <TableCell className="max-w-xs truncate">
-                          {record.notes || "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Link href={`/dashboard/sessions/${record.session.id}`}>
-                            <Button variant="outline" size="sm">View Session</Button>
-                          </Link>
+                          {item.notes || "-"}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  No attendance records found
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -50,6 +50,12 @@ const config: Config = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          hover: 'hsl(var(--sidebar-hover))',
+          active: 'hsl(var(--sidebar-active))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -60,6 +66,11 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+      },
+      boxShadow: {
+        'premium-sm': '0 4px 20px -4px rgba(0, 0, 0, 0.1)',
+        'premium-md': '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
+        'premium-lg': '0 20px 40px -15px rgba(0, 0, 0, 0.1)',
       },
       keyframes: {
         'accordion-down': {
