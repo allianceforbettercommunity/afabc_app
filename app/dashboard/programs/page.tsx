@@ -289,6 +289,8 @@ export default function ProgramsPage() {
   };
 
   const handleViewDetails = (program: Program) => {
+    setSelectedProgram(program);
+    setIsDetailsDialogOpen(true);
     router.push(`/dashboard/programs/${program.id}`);
   };
 
@@ -694,4 +696,4 @@ export default function ProgramsPage() {
       </div>
     </div>
   );
-} 
+}

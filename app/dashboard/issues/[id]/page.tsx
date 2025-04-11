@@ -242,7 +242,7 @@ export default async function IssueDetailPage({ params }: { params: { id: string
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Link href={`/dashboard/issues?edit=${issue.id}`}>
+                <Link href={`/dashboard/issues/${issue.id}/edit`}>
                   <Button className="w-full">Edit Issue</Button>
                 </Link>
                 <Link href={`/dashboard/programs?issueId=${issue.id}`}>
