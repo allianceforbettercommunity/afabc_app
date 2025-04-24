@@ -15,7 +15,7 @@ export default async function EditIssuePage({ params }: { params: { id: string }
   }
 
   async function updateIssue(formData: FormData) {
-    "use server";
+    // "use server"; - removed server action directive for now
 
     const supabase = createClient();
 
