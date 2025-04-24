@@ -35,44 +35,24 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, ChevronUp, ChevronDown, Pencil, Search, Filter } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-interface Issue {
-  id: string;
-  title: string;
-}
-
-interface Session {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-}
-
-interface Program {
-  id: string;
-  title: string;
-  description: string;
-  issueId: string;
-  issueName: string;
-  status: string;
-  startDate: string;
-  endDate: string;
-  createdAt: string;
-  updatedAt: string;
-  issue?: Issue;
-  sessions?: Session[];
-}
-
-type SortField = 'title' | 'issueName' | 'status' | 'startDate' | 'sessionCount';
-type SortOrder = 'asc' | 'desc';
+import { Program, Issue, Session, SortField, SortOrder } from "@/types/program";
 
 export default function ProgramsPage() {
+  const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>('startDate');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<SortField>("title");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [issueFilter, setIssueFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -87,11 +67,8 @@ export default function ProgramsPage() {
     startDate: "",
     endDate: "",
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; // Show 6 items per page (2 rows of 3 cards)
 
   const supabase = createClient();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const fetchIssues = async () => {
