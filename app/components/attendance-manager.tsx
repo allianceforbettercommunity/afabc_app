@@ -41,7 +41,6 @@ interface AttendanceManagerProps {
   sessionId: string;
   existingAttendance?: Attendance[];
   onUpdate?: () => void;
-  onAttendanceChange?: () => void;
 }
 
 interface NewParent {
@@ -53,8 +52,7 @@ interface NewParent {
 export default function AttendanceManager({ 
   sessionId, 
   existingAttendance = [], 
-  onUpdate, 
-  onAttendanceChange 
+  onUpdate 
 }: AttendanceManagerProps) {
   const [isAttendanceDialogOpen, setIsAttendanceDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,7 +72,6 @@ export default function AttendanceManager({
 
   const handleCallback = () => {
     if (onUpdate) onUpdate();
-    if (onAttendanceChange) onAttendanceChange();
   };
 
   const searchParents = async (query: string) => {
