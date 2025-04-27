@@ -201,7 +201,7 @@ export default function ParentsPage() {
         throw error;
       }
 
-      toast.success("Parent added successfully!");
+      toast.success("Person added successfully!");
       setNewParent({
         name: "",
         email: "",
@@ -213,8 +213,8 @@ export default function ParentsPage() {
       setIsDialogOpen(false);
       fetchParents();
     } catch (err: any) {
-      toast.error(err.message || "Failed to add parent");
-      console.error("Error adding parent:", err);
+      toast.error(err.message || "Failed to add person");
+      console.error("Error adding person:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -272,64 +272,53 @@ export default function ParentsPage() {
   }
 
   return (
-    <div className="py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Parents Directory</h1>
-          <p className="text-muted-foreground">Manage parent contacts and track their program participation</p>
-        </div>
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">People</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 flex items-center">
+            <Button>
               <Plus className="h-4 w-4 mr-2" />
-              New Parent
+              Add New Person
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Parent</DialogTitle>
+              <DialogTitle>Add New Person</DialogTitle>
               <DialogDescription>
-                Add a new parent to track attendance and participation in programs.
+                Add a new person to track their participation.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
-              <div className="grid gap-5 py-4">
+              <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
                     name="name"
                     value={newParent.name}
                     onChange={handleInputChange}
-                    className="focus-visible:ring-primary"
-                    placeholder="Parent's full name"
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={newParent.email}
-                      onChange={handleInputChange}
-                      className="focus-visible:ring-primary"
-                      placeholder="Email address"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={newParent.phone}
-                      onChange={handleInputChange}
-                      className="focus-visible:ring-primary"
-                      placeholder="Phone number"
-                    />
-                  </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={newParent.email}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={newParent.phone}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="address">Address</Label>
@@ -338,56 +327,46 @@ export default function ParentsPage() {
                     name="address"
                     value={newParent.address}
                     onChange={handleInputChange}
-                    className="focus-visible:ring-primary"
-                    placeholder="Home address"
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="childrenInfo">Children Information</Label>
+                  <Label htmlFor="childrenInfo">Information</Label>
                   <Textarea
                     id="childrenInfo"
                     name="childrenInfo"
                     value={newParent.childrenInfo}
                     onChange={handleInputChange}
-                    rows={2}
-                    className="focus-visible:ring-primary min-h-[80px]"
-                    placeholder="Names and ages of children"
+                    rows={3}
+                    placeholder="Additional information"
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="notes">Additional Notes</Label>
+                  <Label htmlFor="notes">Notes</Label>
                   <Textarea
                     id="notes"
                     name="notes"
                     value={newParent.notes}
                     onChange={handleInputChange}
-                    rows={2}
-                    className="focus-visible:ring-primary min-h-[80px]"
-                    placeholder="Additional information (optional)"
+                    rows={3}
                   />
                 </div>
               </div>
               <DialogFooter>
                 <Button 
-                  type="button" 
                   variant="outline" 
+                  type="button" 
                   onClick={() => setIsDialogOpen(false)}
-                  className="border-primary/30 hover:bg-primary/10 hover:text-primary"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="bg-primary hover:bg-primary/90"
-                >
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Adding...
                     </>
                   ) : (
-                    "Add Parent"
+                    "Add Person"
                   )}
                 </Button>
               </DialogFooter>
@@ -395,14 +374,38 @@ export default function ParentsPage() {
           </DialogContent>
         </Dialog>
       </div>
-      
+
+      <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+        <div className="relative mb-4">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search people..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {currentParents.length} of {filteredParents.length} people
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setSearchQuery("")}
+          >
+            Clear Filter
+          </Button>
+        </div>
+      </div>
+
       <Card className="premium-shadow border-border/60 mb-8">
         <CardHeader className="bg-secondary/30 pb-4">
-          <CardTitle className="text-lg flex items-center justify-between">
-            <span>Search Parents</span>
-            <Badge variant="outline" className="font-normal text-xs">
-              {filteredParents.length} of {parents.length} parents
-            </Badge>
+          <CardTitle className="premium-gradient-text flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            People Directory
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
@@ -439,39 +442,39 @@ export default function ParentsPage() {
         </CardContent>
       </Card>
 
-      {filteredParents.length === 0 ? (
-        <Card className="premium-shadow border-border/60 p-8">
-          <div className="flex flex-col items-center justify-center text-center py-12">
-            <div className="rounded-full bg-secondary p-4 mb-4">
-              <User className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-medium mb-1">No parents found</h3>
-            {filteredParents.length === 0 && parents.length > 0 ? (
-              <p className="text-muted-foreground max-w-md mb-4">Your current search doesn&apos;t match any parents. Try using different search terms.</p>
-            ) : (
-              <p className="text-muted-foreground max-w-md mb-4">You haven&apos;t added any parents yet. Add your first parent to start tracking participation.</p>
-            )}
-            <Button 
-              onClick={() => {
-                if (filteredParents.length === 0 && parents.length > 0) {
-                  setSearchQuery("");
-                } else {
-                  setIsDialogOpen(true);
-                }
-              }}
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading people...</span>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <AlertTriangle className="h-10 w-10 text-destructive mx-auto mb-4" />
+          <h3 className="text-lg font-medium mb-1 text-destructive">Error Loading Data</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={fetchParents} className="bg-primary hover:bg-primary/90">
+            Try Again
+          </Button>
+        </div>
+      ) : currentParents.length === 0 ? (
+        <div className="text-center py-12">
+          <User className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium mb-1">No People Found</h3>
+          <p className="text-muted-foreground mb-4">
+            {parents.length === 0
+              ? "Get started by adding your first person!"
+              : "No people match your search criteria. Try a different search term."}
+          </p>
+          {parents.length === 0 && (
+            <Button
+              onClick={() => setIsDialogOpen(true)}
               className="bg-primary hover:bg-primary/90"
             >
-              {filteredParents.length === 0 && parents.length > 0 ? (
-                <>Clear Search</>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add First Parent
-                </>
-              )}
+              <Plus className="h-4 w-4 mr-2" />
+              Add Person
             </Button>
-          </div>
-        </Card>
+          )}
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -545,7 +548,7 @@ export default function ParentsPage() {
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
                           <BookUser className="h-4 w-4 text-primary/70" />
-                          <h3 className="text-sm font-medium">Children</h3>
+                          <h3 className="text-sm font-medium">Information</h3>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2">{parent.childrenInfo}</p>
                       </div>
@@ -616,6 +619,18 @@ export default function ParentsPage() {
           )}
         </div>
       )}
+
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{selectedParent?.name}</DialogTitle>
+            <DialogDescription>
+              Person details and attendance history
+            </DialogDescription>
+          </DialogHeader>
+          {/* ... rest of dialog content ... */}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 

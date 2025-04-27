@@ -57,10 +57,10 @@ interface Parent {
   attendance?: Attendance[];
 }
 
-export default async function ParentDetailPage({ params }: { params: { id: string } }) {
+export default async function PersonDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
   
-  // Fetch parent details
+  // Fetch person details
   const { data: parentData, error: parentError } = await supabase
     .from("parents")
     .select("*")
@@ -80,7 +80,7 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
           <h1 className="text-3xl font-bold">Error</h1>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{parentError.message || "Failed to fetch parent details"}</p>
+          <p className="text-red-800">{parentError.message || "Failed to fetch person details"}</p>
           <Button asChild className="mt-4">
             <Link href="/dashboard/parents">Go Back</Link>
           </Button>
@@ -99,9 +99,9 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
               Back
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold">Parent Not Found</h1>
+          <h1 className="text-3xl font-bold">Person Not Found</h1>
         </div>
-        <p>The requested parent could not be found.</p>
+        <p>The requested person could not be found.</p>
         <Button asChild className="mt-4">
           <Link href="/dashboard/parents">Go Back</Link>
         </Button>
@@ -152,7 +152,7 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Parent Details</CardTitle>
+              <CardTitle>Person Details</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -195,7 +195,7 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
                   <>
                     <Separator />
                     <div>
-                      <h3 className="font-medium">Children Information</h3>
+                      <h3 className="font-medium">Information</h3>
                       <p className="text-muted-foreground">{parent.childrenInfo}</p>
                     </div>
                   </>
@@ -223,7 +223,7 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
             <CardContent>
               <div className="space-y-2">
                 <Link href={`/dashboard/parents?edit=${parent.id}`}>
-                  <Button className="w-full">Edit Parent</Button>
+                  <Button className="w-full">Edit Person</Button>
                 </Link>
                 <Link href={`/dashboard/sessions?parentId=${parent.id}`}>
                   <Button variant="outline" className="w-full">
@@ -249,7 +249,7 @@ export default async function ParentDetailPage({ params }: { params: { id: strin
             <CardHeader>
               <CardTitle>Attendance History</CardTitle>
               <CardDescription>
-                Sessions the parent has attended or been invited to
+                Sessions the person has attended or been invited to
               </CardDescription>
             </CardHeader>
             <CardContent>

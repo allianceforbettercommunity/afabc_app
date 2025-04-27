@@ -12,9 +12,12 @@ import {
   Calendar, 
   LogOut,
   Menu,
-  X
+  X,
+  Download
 } from "lucide-react";
 import { useState } from "react";
+import { exportAllData } from "@/lib/export-utils";
+import { toast } from "sonner";
 
 const navItems = [
   {
@@ -28,8 +31,8 @@ const navItems = [
     icon: FileText,
   },
   {
-    title: "Politicians",
-    href: "/dashboard/politicians",
+    title: "People",
+    href: "/dashboard/parents",
     icon: Users,
   },
   {
@@ -43,6 +46,20 @@ export function DashboardNav() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      await exportAllData();
+      toast.success("Data exported successfully!");
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      toast.error("Failed to export data");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <>
@@ -79,6 +96,15 @@ export function DashboardNav() {
               </Link>
             ))}
             <Button 
+              variant="outline"
+              className="flex items-center gap-2 px-3 py-2 text-lg justify-start"
+              onClick={handleExportData}
+              disabled={isExporting}
+            >
+              <Download className="h-5 w-5" />
+              {isExporting ? "Exporting..." : "Export Data"}
+            </Button>
+            <Button 
               variant="ghost" 
               className="flex items-center gap-2 px-3 py-2 text-lg justify-start"
               onClick={() => {
@@ -114,6 +140,20 @@ export function DashboardNav() {
               {item.title}
             </Link>
           ))}
+          
+          {/* Export Data Button */}
+          <Button 
+            variant="ghost"
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent justify-start",
+              "text-left font-normal"
+            )}
+            onClick={handleExportData}
+            disabled={isExporting}
+          >
+            <Download className="h-5 w-5" />
+            {isExporting ? "Exporting..." : "Export to CSV"}
+          </Button>
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-2 mb-4">
@@ -125,14 +165,16 @@ export function DashboardNav() {
               <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center gap-2"
-            onClick={logout}
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+          <div className="space-y-2">
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center gap-2"
+              onClick={logout}
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
     </>

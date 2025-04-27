@@ -280,6 +280,7 @@ export default function SessionDetail({ sessionId }: SessionDetailProps) {
         </div>
 
         <div className="space-y-6">
+          {/* Attendance Summary - Commented out
           <Card className="premium-shadow border-border/60">
             <CardHeader className="bg-secondary/30 pb-4">
               <CardTitle className="text-lg premium-gradient-text">Attendance Summary</CardTitle>
@@ -316,6 +317,7 @@ export default function SessionDetail({ sessionId }: SessionDetailProps) {
               </div>
             </CardContent>
           </Card>
+          */}
           
           {session.program && (
             <Card className="premium-shadow border-border/60">

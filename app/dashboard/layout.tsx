@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth-provider";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,8 +17,11 @@ import {
   School,
   UserCircle,
   LogOut,
-  Mail
+  Mail,
+  Download
 } from "lucide-react";
+import { toast } from "sonner";
+import { exportAllData } from "@/lib/export-utils";
 
 export default function DashboardLayout({
   children,
@@ -28,6 +31,20 @@ export default function DashboardLayout({
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      await exportAllData();
+      toast.success("Data exported successfully!");
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      toast.error("Failed to export data");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -134,8 +151,19 @@ export default function DashboardLayout({
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 h-3/5 w-1 bg-sidebar-foreground rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
                     )}
                     <UserCircle className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-                    <span>Parents</span>
+                    <span>People</span>
                   </Link>
+                  <button
+                    onClick={handleExportData}
+                    disabled={isExporting}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground/90 transition-all duration-200 hover:bg-sidebar-hover group relative overflow-hidden text-left",
+                      "hover:translate-x-1 active:scale-95"
+                    )}
+                  >
+                    <Download className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+                    <span>{isExporting ? "Exporting..." : "Export Data"}</span>
+                  </button>
                 </div>
               </div>
               

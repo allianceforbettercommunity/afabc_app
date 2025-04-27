@@ -87,11 +87,11 @@ export default function AttendanceManager({
       .limit(10);
 
     if (error) {
-      console.error("Error searching parents:", error);
+      console.error("Error searching people:", error);
       return;
     }
 
-    // Filter out parents who are already in attendance
+    // Filter out people who are already in attendance
     const parentIds = existingAttendance.map(a => a.parentId);
     const filteredResults = data?.filter(parent => !parentIds.includes(parent.id)) || [];
     
@@ -104,10 +104,10 @@ export default function AttendanceManager({
       .insert({ sessionId, parentId, attended: true });
 
     if (error) {
-      console.error("Error adding parent to session:", error);
-      toast.error("Failed to add parent to session");
+      console.error("Error adding person to session:", error);
+      toast.error("Failed to add person to session");
     } else {
-      toast.success("Parent added to session");
+      toast.success("Person added to session");
       handleCallback();
       setIsAttendanceDialogOpen(false);
     }
@@ -134,7 +134,7 @@ export default function AttendanceManager({
     e.preventDefault();
     
     try {
-      // Create new parent
+      // Create new person
       const { data: parentData, error: parentError } = await supabase
         .from("parents")
         .insert([newParent])
@@ -143,7 +143,7 @@ export default function AttendanceManager({
 
       if (parentError) throw parentError;
 
-      // Add parent to session
+      // Add person to session
       await addParentToSession(parentData.id);
 
       // Reset form and state
@@ -152,11 +152,11 @@ export default function AttendanceManager({
       setSearchQuery("");
       setSearchResults([]);
 
-      toast.success("New parent created and added to session");
+      toast.success("New person created and added to session");
       setIsAttendanceDialogOpen(false);
     } catch (error: any) {
-      console.error("Error creating parent:", error);
-      toast.error(error.message || "Failed to create parent");
+      console.error("Error creating person:", error);
+      toast.error(error.message || "Failed to create person");
     }
   };
 
@@ -209,7 +209,7 @@ export default function AttendanceManager({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[40%]">Parent</TableHead>
+                    <TableHead className="w-[40%]">Person</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -265,7 +265,7 @@ export default function AttendanceManager({
                 <UserPlus className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium mb-1">No attendees yet</h3>
-              <p className="text-muted-foreground mb-4">Add parents to track attendance for this session</p>
+              <p className="text-muted-foreground mb-4">Add people to track attendance for this session</p>
               <Button 
                 onClick={() => setIsAttendanceDialogOpen(true)}
                 variant="default"
@@ -283,7 +283,7 @@ export default function AttendanceManager({
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Manage Attendance</DialogTitle>
-            <DialogDescription>Search for existing parents or create a new one.</DialogDescription>
+            <DialogDescription>Search for existing people or create a new one.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {!isCreatingParent ? (
@@ -293,7 +293,7 @@ export default function AttendanceManager({
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="text"
-                      placeholder="Search parents by name"
+                      placeholder="Search people by name"
                       value={searchQuery}
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -303,7 +303,7 @@ export default function AttendanceManager({
                     />
                   </div>
                   <Button onClick={() => setIsCreatingParent(true)} variant="default" className="bg-primary hover:bg-primary/90">
-                    New Parent
+                    New Person
                   </Button>
                 </div>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
@@ -326,11 +326,11 @@ export default function AttendanceManager({
                     ))
                   ) : searchQuery.trim() ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      No parents found with that name
+                      No people found with that name
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      Search for parents by name
+                      Search for people by name
                     </div>
                   )}
                 </div>
