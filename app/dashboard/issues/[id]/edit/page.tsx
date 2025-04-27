@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export default async function EditIssuePage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -15,7 +16,7 @@ export default async function EditIssuePage({ params }: { params: { id: string }
   }
 
   async function updateIssue(formData: FormData) {
-    // "use server"; - removed server action directive for now
+    "use server";
 
     const supabase = createClient();
 
@@ -37,6 +38,10 @@ export default async function EditIssuePage({ params }: { params: { id: string }
       throw new Error("Failed to update issue.");
     }
 
+    // Revalidate both the issue detail page and the issues list page
+    revalidatePath(`/dashboard/issues/${params.id}`);
+    revalidatePath('/dashboard/issues');
+    
     redirect(`/dashboard/issues/${params.id}`);
   }
 

@@ -222,7 +222,7 @@ export default async function PersonDetailPage({ params }: { params: { id: strin
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Link href={`/dashboard/parents?edit=${parent.id}`}>
+                <Link href={`/dashboard/parents/${parent.id}/edit`}>
                   <Button className="w-full">Edit Person</Button>
                 </Link>
                 <Link href={`/dashboard/sessions?parentId=${parent.id}`}>

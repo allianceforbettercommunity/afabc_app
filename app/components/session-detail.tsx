@@ -319,6 +319,19 @@ export default function SessionDetail({ sessionId }: SessionDetailProps) {
           </Card>
           */}
           
+          <Card className="premium-shadow border-border/60">
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Link href={`/dashboard/sessions/${sessionId}/edit`}>
+                  <Button className="w-full">Edit Session</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          
           {session.program && (
             <Card className="premium-shadow border-border/60">
               <CardHeader className="bg-secondary/30 pb-4">

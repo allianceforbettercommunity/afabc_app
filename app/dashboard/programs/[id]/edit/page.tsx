@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export default async function EditProgramPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -14,16 +15,47 @@ export default async function EditProgramPage({ params }: { params: { id: string
     return <div className="p-6 text-red-600">Failed to load program.</div>;
   }
 
+  // Format date for HTML date input (YYYY-MM-DD)
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return "";
+    // Parse the date string and create a new date object
+    const date = new Date(dateString);
+    // Get the local date components
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    // Return in YYYY-MM-DD format
+    return `${year}-${month}-${day}`;
+  };
+
+  console.log("Program start date:", program.startDate);
+  console.log("Formatted start date:", formatDateForInput(program.startDate));
+  console.log("Program end date:", program.endDate);
+  console.log("Formatted end date:", formatDateForInput(program.endDate));
+
   async function updateProgram(formData: FormData) {
-    // "use server"; - removed server action directive for now
+    "use server";
 
     const supabase = createClient();
+
+    // Create dates at noon UTC to avoid timezone issues
+    const startDate = formData.get("startDate") 
+      ? new Date(formData.get("startDate") + 'T12:00:00Z').toISOString() 
+      : null;
+    const endDate = formData.get("endDate") 
+      ? new Date(formData.get("endDate") + 'T12:00:00Z').toISOString() 
+      : null;
+
+    console.log("Form start date:", formData.get("startDate"));
+    console.log("Processed start date:", startDate);
+    console.log("Form end date:", formData.get("endDate"));
+    console.log("Processed end date:", endDate);
 
     const updated = {
       title: formData.get("title"),
       description: formData.get("description"),
-      startDate: formData.get("startDate"),
-      endDate: formData.get("endDate"),
+      startDate,
+      endDate,
     };
 
     const { error } = await supabase
@@ -32,11 +64,15 @@ export default async function EditProgramPage({ params }: { params: { id: string
       .eq("id", params.id);
 
     if (error) {
-         console.log("Updating program with:", updated);
+      console.log("Updating program with:", updated);
       console.error("Update failed:", error.message);
       throw new Error("Failed to update program.");
     }
 
+    // Revalidate both the program detail page and the programs list page
+    revalidatePath(`/dashboard/programs/${params.id}`);
+    revalidatePath('/dashboard/programs');
+    
     redirect(`/dashboard/programs/${params.id}`);
   }
 
@@ -72,7 +108,7 @@ export default async function EditProgramPage({ params }: { params: { id: string
             type="date"
             id="startDate"
             name="startDate"
-            defaultValue={program.startDate}
+            defaultValue={formatDateForInput(program.startDate)}
             className="w-full border border-gray-300 p-2 rounded"
           />
         </div>
@@ -82,7 +118,7 @@ export default async function EditProgramPage({ params }: { params: { id: string
             type="date"
             id="endDate"
             name="endDate"
-            defaultValue={program.endDate}
+            defaultValue={formatDateForInput(program.endDate)}
             className="w-full border border-gray-300 p-2 rounded"
           />
         </div>

@@ -169,6 +169,14 @@ export default function ProgramsPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return "";
+    // Create a new date object and set it to noon UTC to avoid timezone issues
+    const date = new Date(dateString);
+    date.setUTCHours(12, 0, 0, 0);
+    return date.toISOString().split('T')[0];
+  };
+
   const handleEditProgram = (program: Program) => {
     setEditingProgram(program);
     setFormData({
@@ -176,8 +184,8 @@ export default function ProgramsPage() {
       description: program.description || "",
       issueId: program.issueId,
       status: program.status,
-      startDate: program.startDate || "",
-      endDate: program.endDate || "",
+      startDate: formatDateForInput(program.startDate),
+      endDate: formatDateForInput(program.endDate),
     });
     setIsDialogOpen(true);
   };
@@ -202,9 +210,19 @@ export default function ProgramsPage() {
       const selectedIssue = issues.find(issue => issue.id === formData.issueId);
       const issueName = selectedIssue ? selectedIssue.title : "";
 
+      // Create dates at noon UTC to avoid timezone issues
+      const startDate = formData.startDate 
+        ? new Date(formData.startDate + 'T12:00:00Z').toISOString() 
+        : null;
+      const endDate = formData.endDate 
+        ? new Date(formData.endDate + 'T12:00:00Z').toISOString() 
+        : null;
+
       const programData = {
         ...formData,
-        issueName
+        issueName,
+        startDate,
+        endDate
       };
 
       let result;

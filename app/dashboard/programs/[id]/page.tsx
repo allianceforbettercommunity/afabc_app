@@ -217,7 +217,10 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString();
+    // Create a new date object and set it to noon UTC to avoid timezone issues
+    const date = new Date(dateString);
+    date.setUTCHours(12, 0, 0, 0);
+    return date.toLocaleDateString();
   };
 
   const getStatusColor = (status: string) => {
