@@ -137,8 +137,8 @@ export default function ProgramsPage() {
 
       setPrograms(programsWithSessions);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch programs");
-      console.error("Error fetching programs:", err);
+      setError(err.message || "Failed to fetch initiatives");
+      console.error("Error fetching initiatives:", err);
     } finally {
       setLoading(false);
     }
@@ -235,7 +235,7 @@ export default function ProgramsPage() {
           .select();
         
         if (result.error) throw result.error;
-        toast.success("Program updated successfully!");
+        toast.success("Initiative updated successfully!");
       } else {
         // Create new program
         result = await supabase
@@ -244,7 +244,7 @@ export default function ProgramsPage() {
           .select();
         
         if (result.error) throw result.error;
-        toast.success("Program created successfully!");
+        toast.success("Initiative created successfully!");
       }
 
       resetForm();
@@ -381,19 +381,19 @@ export default function ProgramsPage() {
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Programs</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Initiatives</h1>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
         }}>
           <DialogTrigger asChild>
-            <Button>Add New Program</Button>
+            <Button>Add New Initiative</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingProgram ? 'Edit Program' : 'Create New Program'}</DialogTitle>
+              <DialogTitle>{editingProgram ? 'Edit Initiative' : 'Create New Initiative'}</DialogTitle>
               <DialogDescription>
-                {editingProgram ? 'Update program details.' : 'Add a new program to help address an issue.'}
+                {editingProgram ? 'Update initiative details.' : 'Add a new initiative to help address an issue.'}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
@@ -498,7 +498,7 @@ export default function ProgramsPage() {
                       {editingProgram ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
-                    editingProgram ? 'Update Program' : 'Create Program'
+                    editingProgram ? 'Update Initiative' : 'Create Initiative'
                   )}
                 </Button>
               </DialogFooter>
@@ -514,7 +514,7 @@ export default function ProgramsPage() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search programs..."
+                placeholder="Search initiatives..."
                 className="w-full pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -554,7 +554,7 @@ export default function ProgramsPage() {
         
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm text-muted-foreground">
-            Showing {currentPrograms.length} of {filteredPrograms.length} programs
+            Showing {currentPrograms.length} of {filteredPrograms.length} initiatives
           </div>
           <Button 
             variant="outline" 
@@ -613,7 +613,7 @@ export default function ProgramsPage() {
               {currentPrograms.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No programs found. Adjust filters or create a new program.
+                    No initiatives found. Adjust filters or create a new initiative.
                   </TableCell>
                 </TableRow>
               ) : (

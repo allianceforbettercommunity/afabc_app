@@ -1,23 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  Legend
+  Legend,
 } from "recharts";
 import { createClient } from "@/lib/supabase/client";
-import { BarChart3, Users, Calendar, Layers, ChevronRight, Clock } from "lucide-react";
+import {
+  BarChart3,
+  Users,
+  Calendar,
+  Layers,
+  ChevronRight,
+  Clock,
+} from "lucide-react";
 import Link from "next/link";
 
 interface Issue {
@@ -72,51 +85,54 @@ export default function DashboardPage() {
     async function fetchData() {
       try {
         setLoading(true);
-        
+
         // Fetch data from Supabase
         const { data: issues, error: issuesError } = await supabase
           .from("issues")
           .select("*");
-        
+
         if (issuesError) throw issuesError;
-        
+
         const { data: programs, error: programsError } = await supabase
           .from("programs")
           .select("*");
-        
+
         if (programsError) throw programsError;
-        
+
         const { data: sessions, error: sessionsError } = await supabase
           .from("sessions")
           .select("*")
           .order("date", { ascending: true });
-        
+
         if (sessionsError) throw sessionsError;
-        
+
         const { data: parents, error: parentsError } = await supabase
           .from("parents")
           .select("*");
-        
+
         if (parentsError) throw parentsError;
-        
+
         const { data: attendance, error: attendanceError } = await supabase
           .from("attendance")
           .select("*");
-        
+
         if (attendanceError) throw attendanceError;
-        
+
         // Set counts
         setIssueCount(issues?.length || 0);
         setProgramCount(programs?.length || 0);
         setSessionCount(sessions?.length || 0);
         setParentCount(parents?.length || 0);
-        
+
         // Process issue data for pie chart
-        const issueCategories = issues?.reduce((acc: Record<string, number>, issue) => {
-          const category = issue.category || "Uncategorized";
-          acc[category] = (acc[category] || 0) + 1;
-          return acc;
-        }, {});
+        const issueCategories = issues?.reduce(
+          (acc: Record<string, number>, issue) => {
+            const category = issue.category || "Uncategorized";
+            acc[category] = (acc[category] || 0) + 1;
+            return acc;
+          },
+          {}
+        );
 
         setIssueData(
           Object.entries(issueCategories || {}).map(([name, value]) => ({
@@ -126,25 +142,45 @@ export default function DashboardPage() {
         );
 
         // Process session data by month
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const sessionsByMonthData = months.map(month => {
-          const count = sessions?.filter(session => {
-            if (!session.date) return false;
-            const sessionMonth = new Date(session.date).toLocaleString('default', { month: 'short' });
-            return sessionMonth === month;
-          }).length || 0;
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        const sessionsByMonthData = months.map((month) => {
+          const count =
+            sessions?.filter((session) => {
+              if (!session.date) return false;
+              const sessionMonth = new Date(session.date).toLocaleString(
+                "default",
+                { month: "short" }
+              );
+              return sessionMonth === month;
+            }).length || 0;
           return { name: month, count };
         });
 
         setSessionsByMonth(sessionsByMonthData);
-        
+
         // Set upcoming sessions (future dates only)
         const now = new Date();
-        const upcoming = sessions?.filter(session => {
-          if (!session.date) return false;
-          return new Date(session.date) > now;
-        }).slice(0, 5) || [];
-        
+        const upcoming =
+          sessions
+            ?.filter((session) => {
+              if (!session.date) return false;
+              return new Date(session.date) > now;
+            })
+            .slice(0, 5) || [];
+
         setUpcomingSessions(upcoming);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -156,7 +192,7 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  const CHART_COLORS = ['#FF9F29', '#2D5BFF', '#4CAF50', '#E91E63', '#9C27B0'];
+  const CHART_COLORS = ["#FF9F29", "#2D5BFF", "#4CAF50", "#E91E63", "#9C27B0"];
 
   if (loading) {
     return (
@@ -164,7 +200,9 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center flex-1">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
-            <p className="mt-4 text-muted-foreground font-medium">Loading dashboard data...</p>
+            <p className="mt-4 text-muted-foreground font-medium">
+              Loading dashboard data...
+            </p>
           </div>
         </div>
       </div>
@@ -175,11 +213,15 @@ export default function DashboardPage() {
     <div className="flex flex-col min-h-screen">
       <div className="mb-8">
         <div className="flex flex-col space-y-1.5">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Dashboard Overview</h1>
-          <p className="text-muted-foreground">Monitor your program activities and track engagement metrics.</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            Dashboard Overview
+          </h1>
+          <p className="text-muted-foreground">
+            Monitor your program activities and track engagement metrics.
+          </p>
         </div>
       </div>
-      
+
       <div className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
@@ -195,8 +237,8 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-3xl font-bold">{issueCount}</div>
               <div className="mt-4">
-                <Link 
-                  href="/dashboard/issues" 
+                <Link
+                  href="/dashboard/issues"
                   className="text-sm text-primary flex items-center hover:underline"
                 >
                   View all issues
@@ -205,31 +247,31 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center gap-2">
                 <div className="p-2 rounded-full bg-accent/20">
                   <Layers className="h-4 w-4 text-accent" />
                 </div>
-                <span>Programs</span>
+                <span>Initiatives</span>
               </CardTitle>
               <CardDescription>Active initiatives</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{programCount}</div>
               <div className="mt-4">
-                <Link 
-                  href="/dashboard/programs" 
+                <Link
+                  href="/dashboard/programs"
                   className="text-sm text-primary flex items-center hover:underline"
                 >
-                  View all programs
+                  View all initiatives
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center gap-2">
@@ -243,8 +285,8 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-3xl font-bold">{sessionCount}</div>
               <div className="mt-4">
-                <Link 
-                  href="/dashboard/sessions" 
+                <Link
+                  href="/dashboard/sessions"
                   className="text-sm text-primary flex items-center hover:underline"
                 >
                   View all sessions
@@ -253,25 +295,25 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="premium-shadow hover:shadow-premium-md transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center gap-2">
-                <div className="p-2 rounded-full bg-accent/20">
-                  <Users className="h-4 w-4 text-accent" />
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
                 </div>
-                <span>Parents</span>
+                <span>People</span>
               </CardTitle>
               <CardDescription>Registered participants</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{parentCount}</div>
               <div className="mt-4">
-                <Link 
-                  href="/dashboard/parents" 
+                <Link
+                  href="/dashboard/parents"
                   className="text-sm text-primary flex items-center hover:underline"
                 >
-                  View all parents
+                  View all people
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
               </div>
@@ -282,8 +324,12 @@ export default function DashboardPage() {
         <div className="grid gap-8 md:grid-cols-2">
           <Card className="premium-shadow border-border/60">
             <CardHeader className="bg-secondary/30 pb-4">
-              <CardTitle className="text-lg font-medium">Issues by Category</CardTitle>
-              <CardDescription>Distribution of issues across different categories</CardDescription>
+              <CardTitle className="text-lg font-medium">
+                Issues by Category
+              </CardTitle>
+              <CardDescription>
+                Distribution of issues across different categories
+              </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="h-80">
@@ -298,10 +344,15 @@ export default function DashboardPage() {
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
                       >
                         {issueData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={CHART_COLORS[index % CHART_COLORS.length]}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -310,17 +361,23 @@ export default function DashboardPage() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No issue categories found</p>
+                    <p className="text-muted-foreground">
+                      No issue categories found
+                    </p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="premium-shadow border-border/60">
             <CardHeader className="bg-secondary/30 pb-4">
-              <CardTitle className="text-lg font-medium">Sessions by Month</CardTitle>
-              <CardDescription>Number of sessions scheduled per month</CardDescription>
+              <CardTitle className="text-lg font-medium">
+                Sessions by Month
+              </CardTitle>
+              <CardDescription>
+                Number of sessions scheduled per month
+              </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="h-80">
@@ -329,13 +386,18 @@ export default function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                     <XAxis dataKey="name" />
                     <YAxis allowDecimals={false} />
-                    <Tooltip 
-                      contentStyle={{ background: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(255, 255, 255, 0.9)",
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                      }}
                     />
-                    <Bar 
-                      dataKey="count" 
-                      name="Sessions" 
-                      fill="#FF9F29" 
+                    <Bar
+                      dataKey="count"
+                      name="Sessions"
+                      fill="#FF9F29"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -347,7 +409,9 @@ export default function DashboardPage() {
 
         <Card className="premium-shadow border-border/60">
           <CardHeader className="bg-secondary/30 pb-4">
-            <CardTitle className="text-lg font-medium">Upcoming Sessions</CardTitle>
+            <CardTitle className="text-lg font-medium">
+              Upcoming Sessions
+            </CardTitle>
             <CardDescription>Your next 5 scheduled sessions</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -358,13 +422,15 @@ export default function DashboardPage() {
                   const today = new Date();
                   const tomorrow = new Date(today);
                   tomorrow.setDate(tomorrow.getDate() + 1);
-                  
-                  const isToday = sessionDate.toDateString() === today.toDateString();
-                  const isTomorrow = sessionDate.toDateString() === tomorrow.toDateString();
-                  
+
+                  const isToday =
+                    sessionDate.toDateString() === today.toDateString();
+                  const isTomorrow =
+                    sessionDate.toDateString() === tomorrow.toDateString();
+
                   let badgeText = "";
                   let badgeVariant: "default" | "outline" = "outline";
-                  
+
                   if (isToday) {
                     badgeText = "Today";
                     badgeVariant = "default";
@@ -372,36 +438,48 @@ export default function DashboardPage() {
                     badgeText = "Tomorrow";
                     badgeVariant = "outline";
                   }
-                  
+
                   return (
                     <div key={session.id} className="py-4 first:pt-0 last:pb-0">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col space-y-1">
-                          <Link 
+                          <Link
                             href={`/dashboard/sessions/${session.id}`}
                             className="font-medium hover:text-primary hover:underline transition-colors"
                           >
                             {session.title}
                           </Link>
-                          <div className="text-sm text-muted-foreground">{session.programName || "No program"}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {session.programName || "No program"}
+                          </div>
                         </div>
-                        
+
                         <div className="flex flex-col items-end gap-2">
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="h-3.5 w-3.5 mr-1 inline-block" />
-                            {sessionDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {sessionDate.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </div>
                           <div className="flex items-center gap-2">
                             {badgeText && (
-                              <Badge variant={badgeVariant} className="rounded-full px-2.5 py-0.5 text-xs">
+                              <Badge
+                                variant={badgeVariant}
+                                className="rounded-full px-2.5 py-0.5 text-xs"
+                              >
                                 {badgeText}
                               </Badge>
                             )}
                             <span className="text-sm">
-                              {sessionDate.toLocaleDateString(undefined, { 
-                                month: 'short', 
-                                day: 'numeric',
-                                year: sessionDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
+                              {sessionDate.toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year:
+                                  sessionDate.getFullYear() !==
+                                  today.getFullYear()
+                                    ? "numeric"
+                                    : undefined,
                               })}
                             </span>
                           </div>
@@ -416,8 +494,12 @@ export default function DashboardPage() {
                 <div className="rounded-full bg-secondary p-4 mb-4">
                   <Calendar className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-medium mb-1">No upcoming sessions</h3>
-                <p className="text-muted-foreground">Schedule your next session to see it here</p>
+                <h3 className="text-lg font-medium mb-1">
+                  No upcoming sessions
+                </h3>
+                <p className="text-muted-foreground">
+                  Schedule your next session to see it here
+                </p>
               </div>
             )}
           </CardContent>

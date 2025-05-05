@@ -125,7 +125,7 @@ export default function DashboardLayout({
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 h-3/5 w-1 bg-sidebar-foreground rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
                     )}
                     <Layers className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-                    <span>Programs</span>
+                    <span>Initiatives</span>
                   </Link>
                   <Link
                     href="/dashboard/sessions"
